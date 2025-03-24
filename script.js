@@ -1,54 +1,61 @@
-const apiKey = "245dfedc88a8bb9b7f6d7b5f56841aad";  
 
-// Function to get current weather and 5-day forecast
-async function getWeather(city) {
-    try {
-        // Fetch current weather data
-        const currentWeatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
-        const currentWeatherData = await currentWeatherResponse.json();
+const apiKey = '245dfedc88a8bb9b7f6d7b5f56841aad';
 
-        // Check if city is valid
-        if (currentWeatherData.cod !== 200) {
-            alert("City not found. Please try again.");
-            return;
-        }
+document.getElementById('search-button').addEventListener('click', () => {
+  const city = document.getElementById('city-input').value;
+  if (city) {
+    getCurrentWeather(city);
+    getForecast(city);
+  } else {
+    alert('Please enter a city name');
+  }
+});
 
-        // Display current weather data
-        document.getElementById("temp").textContent = `Temperature: ${currentWeatherData.main.temp}°C`;
-        document.getElementById("description").textContent = `Description: ${currentWeatherData.weather[0].description}`;
-        document.getElementById("humidity").textContent = `Humidity: ${currentWeatherData.main.humidity}%`;
-        document.getElementById("wind").textContent = `Wind Speed: ${currentWeatherData.wind.speed} m/s`;
+// Function to fetch and display current weather data
+function getCurrentWeather(city) {
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
-        // Fetch 5-day forecast data
-        const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`);
-        const forecastData = await forecastResponse.json();
-
-        // Display 5-day forecast data
-        const forecastCards = document.getElementById("forecastCards");
-        forecastCards.innerHTML = "";  // Clear previous forecast
-
-        forecastData.list.filter((item, index) => index % 8 === 0).forEach((item) => {
-            const forecastCard = document.createElement("div");
-            forecastCard.classList.add("forecast-card");
-            forecastCard.innerHTML = `
-                <p>${new Date(item.dt_txt).toLocaleDateString()}</p>
-                <p>${item.main.temp}°C</p>
-                <p>${item.weather[0].description}</p>
-            `;
-            forecastCards.appendChild(forecastCard);
-        });
-    } catch (error) {
-        alert("Error fetching weather data.");
-        console.error(error);
-    }
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const weatherContainer = document.getElementById('weather-container');
+      weatherContainer.innerHTML = `
+        <h2>Current Weather in ${city}</h2>
+        <p>Temperature: ${data.main.temp}°C</p>
+        <p>Description: ${data.weather[0].description}</p>
+        <p>Humidity: ${data.main.humidity}%</p>
+      `;
+    })
+    .catch(() => {
+      alert('Error fetching current weather data. Please try again.');
+    });
 }
 
-// Event listener for search button
-document.getElementById("searchButton").addEventListener("click", () => {
-    const city = document.getElementById("cityInput").value.trim();
-    if (city) {
-        getWeather(city);
-    } else {
-        alert("Please enter a city.");
-    }
-});
+// Function to fetch and display 5-day forecast data
+function getForecast(city) {
+  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const forecastContainer = document.getElementById('forecast-container');
+      let forecastHTML = `<h2>5-Day Forecast for ${city}</h2>`;
+
+      data.list.forEach((entry, index) => {
+        if (index % 8 === 0) { // Show one entry per day (8 data points per day)
+          forecastHTML += `
+            <div>
+              <p>Date: ${entry.dt_txt}</p>
+              <p>Temperature: ${entry.main.temp}°C</p>
+              <p>Description: ${entry.weather[0].description}</p>
+            </div>
+          `;
+        }
+      });
+
+      forecastContainer.innerHTML = forecastHTML;
+    })
+    .catch(() => {
+      alert('Error fetching forecast data. Please try again.');
+    });
+}
