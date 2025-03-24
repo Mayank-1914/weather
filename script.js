@@ -1,4 +1,4 @@
-const apiKey = "245dfedc88a8bb9b7f6d7b5f56841aad";  // Your actual API key from OpenWeatherMap
+const apiKey = "245dfedc88a8bb9b7f6d7b5f56841aad";  
 
 // Function to get current weather and 5-day forecast
 async function getWeather(city) {
